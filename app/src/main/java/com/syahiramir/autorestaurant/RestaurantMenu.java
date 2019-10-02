@@ -29,10 +29,11 @@ public class RestaurantMenu {
 
     private RestaurantMenu() {
         menuItems = new MenuItem[MAX_ITEMS];
-        addItem(new BeefSandwich(null));
-        addItem(new CreamyOatmeal(null));
-        addItem(new SpinachLasagna(null));
-        addItem(new TacoSalad(null));
+        // Menu does not need extra identifiers
+        addItem(new BeefSandwich(null, null, null, null, null, null));
+        addItem(new CreamyOatmeal(null, null, null, null, null, null));
+        addItem(new SpinachLasagna(null, null, null, null, null, null));
+        addItem(new TacoSalad(null, null, null, null, null, null));
     }
 
     private static void addItem(MenuItem menuItem) {

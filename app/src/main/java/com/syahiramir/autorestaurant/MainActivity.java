@@ -1,6 +1,7 @@
 package com.syahiramir.autorestaurant;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -11,12 +12,17 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.syahiramir.autorestaurant.menuItem.BeefSandwich;
@@ -26,12 +32,14 @@ import com.syahiramir.autorestaurant.menuItem.SpinachLasagna;
 import com.syahiramir.autorestaurant.menuItem.TacoSalad;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    OrderedItemAdapter otderedItemAdapter;
-    ArrayList<MenuItem> menuItemList = new ArrayList<>();
+    OrderedItemAdapter orderedItemAdapter;
+    ArrayList<MenuItem> orderedItemList = new ArrayList<>();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -57,28 +65,48 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = findViewById(R.id.fab);
         ListView orders = findViewById(R.id.orders);
 
-        otderedItemAdapter = new OrderedItemAdapter(this, menuItemList);
-        orders.setAdapter(otderedItemAdapter);
+        orderedItemAdapter = new OrderedItemAdapter(this, orderedItemList);
+        orders.setAdapter(orderedItemAdapter);
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("userId", mAuth.getCurrentUser().getUid());
+
+        // Post to Firebase
+        db.collection("orders").document(mAuth.getCurrentUser().getUid())
+                .set(user)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // Do nothing
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // DO nothing
+                    }
+                });
 
         db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (value != null) {
+                            orderedItemList.clear();
+                            for (QueryDocumentSnapshot document : value) {
                                 long itemId = (long) document.get("menuId");
                                 if (itemId == 1) {
-                                    menuItemList.add(new BeefSandwich(document.getId()));
+                                    orderedItemList.add(new BeefSandwich(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
                                 } else if (itemId == 2) {
-                                    menuItemList.add(new CreamyOatmeal(document.getId()));
+                                    orderedItemList.add(new CreamyOatmeal(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
                                 } else if (itemId == 3) {
-                                    menuItemList.add(new SpinachLasagna(document.getId()));
+                                    orderedItemList.add(new SpinachLasagna(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
                                 } else if (itemId == 4) {
-                                    menuItemList.add(new TacoSalad(document.getId()));
+                                    orderedItemList.add(new TacoSalad(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
                                 }
                             }
-                            otderedItemAdapter.notifyDataSetChanged();
+                            orderedItemAdapter.notifyDataSetChanged();
                         }
                     }
                 });

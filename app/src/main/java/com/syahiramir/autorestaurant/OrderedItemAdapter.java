@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.syahiramir.autorestaurant.menuItem.MenuItem;
 
 import java.util.List;
@@ -48,16 +49,44 @@ public class OrderedItemAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.ordered_item, null);
 
         TextView name = convertView.findViewById(R.id.item_name);
-        Button orderButton = convertView.findViewById(R.id.order_button);
+        TextView orderStatus = convertView.findViewById(R.id.orderStatus);
+        Button progressButton = convertView.findViewById(R.id.progress_button);
 
         final MenuItem m = menuItems.get(position);
         name.setText(m.getName());
-        orderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                m.order(activity);
-            }
-        });
+
+        if (!m.isPreparing()) {
+            progressButton.setVisibility(View.GONE); // The user has no use of this button yet. Food is being prepared
+            orderStatus.setText("Order Received");
+        } else if (!m.isCooking()) {
+            progressButton.setVisibility(View.GONE);
+            orderStatus.setText("Ingredients Prepared"); // The user has no use of this button yet. Food is being cooked
+        } else if (!m.isReadyForPickup()) {
+            progressButton.setText("Serve");
+            orderStatus.setText("Food ready to serve"); // The user has no use of this button yet. Cooking is being served
+        } else if (!m.isPickedUp()) {
+            progressButton.setText("Pick Up");
+            orderStatus.setText("Food ready for pickup");
+            progressButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    m.pickup(activity);
+                }
+            });
+        } else if (!m.isPaid()) {
+            progressButton.setText("Pay");
+            orderStatus.setText("Food ready for payment");
+            progressButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    m.pay(activity);
+                }
+            });
+        } else {
+            // All actions done
+            progressButton.setVisibility(View.GONE);
+            orderStatus.setText("Food is paid. Thank you!");
+        }
 
         return convertView;
     }

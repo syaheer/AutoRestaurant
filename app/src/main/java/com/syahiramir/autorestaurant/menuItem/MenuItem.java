@@ -21,6 +21,11 @@ public class MenuItem {
     String name;
     int itemNumber;
     String orderId;
+    Boolean isPreparing = false;
+    Boolean isCooking = false;
+    Boolean isReadyForPickup = false;
+    Boolean isPickedUp = false;
+    Boolean isPaid = false;
     ArrayList<String> ingredients = new ArrayList<>();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -31,7 +36,11 @@ public class MenuItem {
 
         Map<String, Object> food = new HashMap<>();
         food.put("menuId", itemNumber);
-        food.put("preparing", false);
+        food.put("isPreparing", false);
+        food.put("isCooking", false);
+        food.put("isReadyForPickup", false);
+        food.put("isPickedUp", false);
+        food.put("isPaid", false);
 
         // Post to Firebase
         db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food")
@@ -55,11 +64,77 @@ public class MenuItem {
                 });
     }
 
-    public void collectIngredients() {
-        System.out.println("Collecting ingredients:");
-        for (String ingredient : ingredients) {
-            System.out.println("\t" + ingredient);
-        }
+    // Used by the kitchen. The ingredients are kept secret!
+    public void prepareIngredients() {
+        // DO nothing
+    }
+
+    // used by the kitchen. Why would the user cook?
+    public void cook() {
+        // DO nothing
+    }
+
+    // Used by the kitchen. How would the user know the food is ready for pickup?
+    public void readyForPickup() {
+        // DO nothing
+    }
+
+    public void pickup(final Activity activity) {
+        db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food").document(orderId)
+                .update("isPickedUp", true)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(activity, "Picked up " + name,
+                                Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(activity, "Preparing " + name + " failed, please try again",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    public void pay(final Activity activity) {
+        db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food").document(orderId)
+                .update("isPaid", true)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(activity, "Paid for " + name,
+                                Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(activity, "Preparing " + name + " failed, please try again",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public Boolean isPreparing() {
+        return isPreparing;
+    }
+
+    public Boolean isCooking() {
+        return isCooking;
+    }
+
+    public Boolean isReadyForPickup() {
+        return isReadyForPickup;
+    }
+
+    public Boolean isPaid() {
+        return isPaid;
     }
 
     public void mix() {
@@ -76,5 +151,9 @@ public class MenuItem {
 
     public String getName() {
         return name;
+    }
+
+    public Boolean isPickedUp() {
+        return isPickedUp;
     }
 }
