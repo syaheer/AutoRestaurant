@@ -9,8 +9,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.Toast;
 
+
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -19,7 +20,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -31,6 +31,8 @@ import com.syahiramir.autorestaurant.menuItem.MenuItem;
 import com.syahiramir.autorestaurant.menuItem.SpinachLasagna;
 import com.syahiramir.autorestaurant.menuItem.TacoSalad;
 
+
+import io.fabric.sdk.android.Fabric;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
@@ -58,6 +61,49 @@ public class MainActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             //updateUI(user);
                             Log.d("user", user.getUid());
+
+                            Map<String, Object> userHashmap = new HashMap<>();
+                            userHashmap.put("userId", mAuth.getCurrentUser().getUid());
+
+                            // Post to Firebase
+                            db.collection("orders").document(mAuth.getCurrentUser().getUid())
+                                    .set(userHashmap)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            // Do nothing
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            // DO nothing
+                                        }
+                                    });
+
+                            db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food")
+                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onEvent(@Nullable QuerySnapshot value,
+                                                            @Nullable FirebaseFirestoreException e) {
+                                            if (value != null) {
+                                                orderedItemList.clear();
+                                                for (QueryDocumentSnapshot document : value) {
+                                                    long itemId = (long) document.get("menuId");
+                                                    if (itemId == 1) {
+                                                        orderedItemList.add(new BeefSandwich(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
+                                                    } else if (itemId == 2) {
+                                                        orderedItemList.add(new CreamyOatmeal(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
+                                                    } else if (itemId == 3) {
+                                                        orderedItemList.add(new SpinachLasagna(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
+                                                    } else if (itemId == 4) {
+                                                        orderedItemList.add(new TacoSalad(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
+                                                    }
+                                                }
+                                                orderedItemAdapter.notifyDataSetChanged();
+                                            }
+                                        }
+                                    });
                         }
                     }
                 });
@@ -68,48 +114,6 @@ public class MainActivity extends AppCompatActivity {
         orderedItemAdapter = new OrderedItemAdapter(this, orderedItemList);
         orders.setAdapter(orderedItemAdapter);
 
-        Map<String, Object> user = new HashMap<>();
-        user.put("userId", mAuth.getCurrentUser().getUid());
-
-        // Post to Firebase
-        db.collection("orders").document(mAuth.getCurrentUser().getUid())
-                .set(user)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        // Do nothing
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // DO nothing
-                    }
-                });
-
-        db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (value != null) {
-                            orderedItemList.clear();
-                            for (QueryDocumentSnapshot document : value) {
-                                long itemId = (long) document.get("menuId");
-                                if (itemId == 1) {
-                                    orderedItemList.add(new BeefSandwich(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
-                                } else if (itemId == 2) {
-                                    orderedItemList.add(new CreamyOatmeal(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
-                                } else if (itemId == 3) {
-                                    orderedItemList.add(new SpinachLasagna(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
-                                } else if (itemId == 4) {
-                                    orderedItemList.add(new TacoSalad(document.getId(), document.getBoolean("isPreparing"), document.getBoolean("isCooking"), document.getBoolean("isReadyForPickup"), document.getBoolean("isPickedUp"), document.getBoolean("isPaid")));
-                                }
-                            }
-                            orderedItemAdapter.notifyDataSetChanged();
-                        }
-                    }
-                });
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

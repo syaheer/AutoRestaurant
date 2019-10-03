@@ -66,6 +66,7 @@ public class OrderedItemAdapter extends BaseAdapter {
             orderStatus.setText("Food ready to serve"); // The user has no use of this button yet. Cooking is being served
         } else if (!m.isPickedUp()) {
             progressButton.setText("Pick Up");
+            progressButton.setVisibility(View.VISIBLE);
             orderStatus.setText("Food ready for pickup");
             progressButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -75,6 +76,7 @@ public class OrderedItemAdapter extends BaseAdapter {
             });
         } else if (!m.isPaid()) {
             progressButton.setText("Pay");
+            progressButton.setVisibility(View.VISIBLE);
             orderStatus.setText("Food ready for payment");
             progressButton.setOnClickListener(new View.OnClickListener() {
                 @Override
