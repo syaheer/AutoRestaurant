@@ -14,6 +14,7 @@ import com.syahiramir.autorestaurant.menuItem.MenuItem;
 
 import java.util.List;
 
+// Adapter Pattern
 public class OrderedItemAdapter extends BaseAdapter {
     private Activity activity;
     private LayoutInflater inflater;

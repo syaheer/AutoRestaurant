@@ -9,7 +9,7 @@ public class BeefSandwich extends MenuItem {
         this.isPreparing = isPreparing;
         this.isCooking = isCooking;
         this.isReadyForPickup = isReadyForPickup;
-        this. isPickedUp = isPickedUp;
+        this.isPickedUp = isPickedUp;
         this.isPaid = isPaid;
 
         ingredients.add("1 small whole grain hoagie bun");

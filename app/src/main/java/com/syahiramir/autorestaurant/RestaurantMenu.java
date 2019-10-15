@@ -11,8 +11,8 @@ import com.syahiramir.autorestaurant.menuItem.SpinachLasagna;
 import com.syahiramir.autorestaurant.menuItem.TacoSalad;
 
 public class RestaurantMenu {
-    static final int MAX_ITEMS = 6;
-    private static MenuItem[] menuItems;
+    static final int MAX_ITEMS = 4;
+    public static MenuItem[] menuItems;
     static int numberOfItems = 0;
     private static RestaurantMenu uniqueInstance;
 
@@ -27,7 +27,7 @@ public class RestaurantMenu {
     }
 
 
-    private RestaurantMenu() {
+    public RestaurantMenu() {
         menuItems = new MenuItem[MAX_ITEMS];
         // Menu does not need extra identifiers
         addItem(new BeefSandwich(null, null, null, null, null, null));

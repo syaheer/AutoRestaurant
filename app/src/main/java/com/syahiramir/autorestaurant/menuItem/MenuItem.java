@@ -27,8 +27,6 @@ public class MenuItem {
     Boolean isPickedUp = false;
     Boolean isPaid = false;
     ArrayList<String> ingredients = new ArrayList<>();
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     public void order(final Activity activity) {
         Toast.makeText(activity, "Ordered " + name,
@@ -42,8 +40,8 @@ public class MenuItem {
         food.put("isPickedUp", false);
         food.put("isPaid", false);
 
-        // Post to Firebase
-        db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food")
+        // Post to Firebase, part of the Proxy Pattern.
+        FirebaseFirestore.getInstance().collection("orders").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).collection("food")
                 .add(food)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
@@ -80,7 +78,7 @@ public class MenuItem {
     }
 
     public void pickup(final Activity activity) {
-        db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food").document(orderId)
+        FirebaseFirestore.getInstance().collection("orders").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).collection("food").document(orderId)
                 .update("isPickedUp", true)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -99,7 +97,7 @@ public class MenuItem {
     }
 
     public void pay(final Activity activity) {
-        db.collection("orders").document(mAuth.getCurrentUser().getUid()).collection("food").document(orderId)
+        FirebaseFirestore.getInstance().collection("orders").document(FirebaseAuth.getInstance().getCurrentUser().getUid()).collection("food").document(orderId)
                 .update("isPaid", true)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
