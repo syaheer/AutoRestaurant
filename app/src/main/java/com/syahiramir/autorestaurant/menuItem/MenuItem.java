@@ -1,7 +1,6 @@
 package com.syahiramir.autorestaurant.menuItem;
 
 import android.app.Activity;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // The Factory Pattern
-public class MenuItem {
+public abstract class MenuItem {
     String name;
     int itemNumber;
     String orderId;
