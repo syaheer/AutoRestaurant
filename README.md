@@ -72,7 +72,7 @@ You can download the two .apk files and run them on an Android Device (by downlo
 [14 best Android emulators for PC and Mac of 2019!](https://www.androidauthority.com/best-android-emulators-for-pc-655308/)
 Personally, I recommend BlueStacks.
 
-### Using the Application
+## Using the Application
 
 on the user app, you can click on the "+" button to order. once you ordered, an id will be created (this is based on the device so the Appetize.io link I sent you might have the same ids).
 Kitchen app will then be notified, and a list will all ids that are ordered will appear. Clicking on an ID will show you a list of ordered items. On the kitchen app, 2 buttons will appear. One to show the ingredients and the other for the next available actions.
